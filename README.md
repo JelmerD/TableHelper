@@ -10,7 +10,7 @@ Examples
 
 ```PHP
 echo $this->Table->create();
-echo $this->Table->row(array('Clint','Eastwood'));
+echo $this->Table->row(array('Clint', 'Eastwood'));
 echo $this->Table->end();
 ```
 
@@ -35,7 +35,7 @@ echo $this->Table->end();
 echo $this->Table->create();
 echo $this->Table->head(array('ID', 'First name', 'Last name'));
 echo $this->Table->row(array(1, 'Clint','Eastwood'));
-echo $this->Table->foot(array(null, Total, 1));
+echo $this->Table->foot(array(null, 'Total names', 1));
 echo $this->Table->end();
 ```
 
@@ -74,10 +74,10 @@ echo $this->Table->end();
 ```PHP
 echo $this->Table->create(array('data-table-stuff' => 'some data'));
 echo $this->Table->head(array(false, 'First name', 'Last name'), array('class' => 'bold'), array('id' => 'my-head'));
-echo $this->Table->row(array(1, 'Clint','Eastwood'));
+echo $this->Table->row(array(1, 'Clint', 'Eastwood'));
 echo $this->Table->row(array(2, array('Arnold', array('colspan' => 2))));
 echo $this->Table->row(array(3, 'David', 'Hasselhoff'), array('data-foo-bar' => 'hide this'));
-echo $this->Table->foot(array('Total names',array(3, array('id' => 'total-count'))));
+echo $this->Table->foot(array('Total names', array(3, array('id' => 'total-count'))));
 echo $this->Table->end();
 ```
 
