@@ -28,6 +28,20 @@ class TableHelper extends AppHelper
      */
     public $helpers = array('Html');
 
+	/**
+	 * Settings you can parse to the helper
+	 *
+	 * @var array
+	 */
+	private $__defaultSettings = array(
+		'createOptions' => array(),
+		'headOptions' => array(),
+		'bodyOptions' => array(),
+		'rowOptions' => array(),
+		'cellOptions' => array(),
+		'footOptions' => array(),
+	);
+
     /**
      * A cache of the head section.
      *
@@ -63,6 +77,16 @@ class TableHelper extends AppHelper
 	 */
 	private $__headCellCount;
 
+	/**
+	 * We overwrite the __construct because we want to be able to parse options to the helper construct for global $options
+	 *
+	 * @param View  $View The View this helper is being attached to.
+	 * @param array $settings The sett
+	 */
+	public function __construct(View $View, $settings = array()){
+		$settings = Hash::merge($this->__defaultSettings, $settings);
+		parent::__construct($View, $settings);
+	}
 
     /**
      * Initialise the Table
@@ -73,9 +97,7 @@ class TableHelper extends AppHelper
     public function create($options = array())
     {
         $this->__reset();
-        $options = array_merge_recursive(array(
-            'class' => 'table'
-        ), $options);
+		$options = Hash::merge($this->settings['createOptions'], $options);
         return $this->Html->tag('table', null, $options);
     }
 
@@ -89,7 +111,9 @@ class TableHelper extends AppHelper
      */
     public function head($columns = array(), $rowOptions = array(), $options = array())
     {
-        $this->__head = $columns;
+		$rowOptions = Hash::merge($this->settings['rowOptions'], $rowOptions);
+		$options = Hash::merge($this->settings['headOptions'], $options);
+		$this->__head = $columns;
 
 		$head =  $this->__bodyClose() . $this->Html->tag('thead', $this->__row($columns, $rowOptions, 'th'), $options);
 		$this->__headCellCount = $this->__cellCount; #cache the head cell count
@@ -109,6 +133,7 @@ class TableHelper extends AppHelper
         if ($this->__bodyOpen) {
             return null;
         }
+		$options = Hash::merge($this->settings['bodyOptions'], $options);
         $this->__bodyOpen = true;
         return $this->Html->tag('tbody', null, $options);
     }
@@ -122,7 +147,8 @@ class TableHelper extends AppHelper
      */
     public function row($columns = array(), $options = array())
     {
-        $this->__rowCount++;
+		$options = Hash::merge($this->settings['rowOptions'], $options);
+		$this->__rowCount++;
         return $this->body() . $this->__row($columns, $options);
     }
 
@@ -167,7 +193,10 @@ class TableHelper extends AppHelper
      */
     public function foot($columns = array(), $rowOptions = array(), $options = array())
     {
-        return $this->__bodyClose() . $this->Html->tag('tfoot', $this->__row($columns, $rowOptions), $options);
+		$rowOptions = Hash::merge($this->settings['rowOptions'], $rowOptions);
+		$options = Hash::merge($this->settings['footOptions'], $options);
+
+		return $this->__bodyClose() . $this->Html->tag('tfoot', $this->__row($columns, $rowOptions), $options);
     }
 
     /**
@@ -208,7 +237,7 @@ class TableHelper extends AppHelper
         return $this->Html->tag(
             $tag,
             is_array($value) && array_key_exists(0, $value) ? $value[0] : $value,
-            is_array($value) && array_key_exists(1, $value) ? $value[1] : array()
+			Hash::merge($this->settings['cellOptions'], is_array($value) && array_key_exists(1, $value) ? $value[1] : array())
         );
     }
 
