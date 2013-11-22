@@ -115,7 +115,7 @@ class TableHelper extends AppHelper
 		$options = Hash::merge($this->settings['headOptions'], $options);
 		$this->__head = $columns;
 
-		$head =  $this->__bodyClose() . $this->Html->tag('thead', $this->__row($columns, $rowOptions, 'th'), $options);
+		$head =  $this->closeBody() . $this->Html->tag('thead', $this->__row($columns, $rowOptions, 'th'), $options);
 		$this->__headCellCount = $this->__cellCount; #cache the head cell count
 		return $head;
     }
@@ -137,6 +137,20 @@ class TableHelper extends AppHelper
         $this->__bodyOpen = true;
         return $this->Html->tag('tbody', null, $options);
     }
+
+	/**
+	 * Close the body if it's still open
+	 *
+	 * @return string
+	 */
+	public function closeBody()
+	{
+		if ($this->__bodyOpen) {
+			$this->__bodyOpen = false;
+			return '</tbody>';
+		}
+		return null;
+	}
 
     /**
      * Parse a row
@@ -196,7 +210,7 @@ class TableHelper extends AppHelper
 		$rowOptions = Hash::merge($this->settings['rowOptions'], $rowOptions);
 		$options = Hash::merge($this->settings['footOptions'], $options);
 
-		return $this->__bodyClose() . $this->Html->tag('tfoot', $this->__row($columns, $rowOptions), $options);
+		return $this->closeBody() . $this->Html->tag('tfoot', $this->__row($columns, $rowOptions), $options);
     }
 
     /**
@@ -206,7 +220,7 @@ class TableHelper extends AppHelper
      */
     public function end()
     {
-        return $this->__bodyClose() . '</table>';
+        return $this->closeBody() . '</table>';
     }
 
     /**
@@ -283,20 +297,6 @@ class TableHelper extends AppHelper
             $cells .= $this->cell($value, $key, $tag, true);
         }
         return $this->Html->tag('tr', $cells, $options);
-    }
-
-    /**
-     * Close the body if it's still open
-     *
-     * @return string
-     */
-    private function __bodyClose()
-    {
-        if ($this->__bodyOpen) {
-            $this->__bodyOpen = false;
-            return '</tbody>';
-        }
-        return null;
     }
 
     /**
