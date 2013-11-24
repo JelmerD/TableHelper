@@ -3,6 +3,35 @@ TableHelper
 
 TableHelper for CakePHP 2.x
 
+Installation
+------------
+
+The easiest way to install the plugin is to use Composer.
+Install Composer in the app folder of your application and then simply run:
+
+```
+php composer.phar require jelmerd/table-helper:dev-master
+```
+
+You can also clone the repository in the Plugin folder:
+
+```
+$ cd app/Plugin
+$ git clone git@github.com:JelmerD/TableHelper.git
+```
+
+Once the plugin is in place, load it in your `app/Config/bootstrap.php` by adding this line:
+
+```php
+CakePlugin::load('TableHelper');
+```
+
+Now to use the Helper, simply load it in your Controller:
+
+```php
+public $helpers = array('TableHelper.Table');
+```
+
 Examples
 --------
 
