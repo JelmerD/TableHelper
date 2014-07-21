@@ -1,7 +1,7 @@
 TableHelper
 ===========
 
-TableHelper for CakePHP 2.x
+TableHelper for CakePHP 3.x
 
 Installation
 ------------
@@ -16,20 +16,20 @@ php composer.phar require jelmerd/table-helper:dev-master
 You can also clone the repository in the Plugin folder:
 
 ```
-$ cd app/Plugin
+$ cd plugins
 $ git clone git@github.com:JelmerD/TableHelper.git
 ```
 
-Once the plugin is in place, load it in your `app/Config/bootstrap.php` by adding this line:
+Once the plugin is in place, load it in your `src/Config/bootstrap.php` by adding this line:
 
 ```php
-CakePlugin::load('TableHelper');
+Plugin::load('TableHelper');
 ```
 
 Now to use the Helper, simply load it in your Controller:
 
 ```php
-public $helpers = array('TableHelper.Table');
+public $helpers = ['TableHelper.Table'];
 ```
 
 Examples
@@ -39,7 +39,7 @@ Examples
 
 ```PHP
 echo $this->Table->create();
-echo $this->Table->row(array('Clint', 'Eastwood'));
+echo $this->Table->row(['Clint', 'Eastwood']);
 echo $this->Table->end();
 ```
 
@@ -62,9 +62,9 @@ echo $this->Table->end();
 
 ```PHP
 echo $this->Table->create();
-echo $this->Table->head(array('ID', 'First name', 'Last name'));
-echo $this->Table->row(array(1, 'Clint','Eastwood'));
-echo $this->Table->foot(array(null, 'Total names', 1));
+echo $this->Table->head(['ID', 'First name', 'Last name']);
+echo $this->Table->row([1, 'Clint','Eastwood']);
+echo $this->Table->foot([null, 'Total names', 1]);
 echo $this->Table->end();
 ```
 
@@ -101,12 +101,12 @@ echo $this->Table->end();
 **Input**
 
 ```PHP
-echo $this->Table->create(array('data-table-stuff' => 'some data'));
-echo $this->Table->head(array(false, 'First name', 'Last name'), array('class' => 'bold'), array('id' => 'my-head'));
-echo $this->Table->row(array(1, 'Clint', 'Eastwood'));
-echo $this->Table->row(array(2, array('Arnold', array('colspan' => 2))));
-echo $this->Table->row(array(3, 'David', 'Hasselhoff'), array('data-foo-bar' => 'hide this'));
-echo $this->Table->foot(array('Total names', array(3, array('id' => 'total-count'))));
+echo $this->Table->create(['data-table-stuff' => 'some data']);
+echo $this->Table->head([false, 'First name', 'Last name'], ['class' => 'bold'], ['id' => 'my-head']);
+echo $this->Table->row([1, 'Clint', 'Eastwood']);
+echo $this->Table->row([2, ['Arnold', ['colspan' => 2]]]);
+echo $this->Table->row([3, 'David', 'Hasselhoff'], ['data-foo-bar' => 'hide this']);
+echo $this->Table->foot(['Total names', [3, ['id' => 'total-count']]]);
 echo $this->Table->end();
 ```
 
