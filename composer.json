@@ -1,11 +1,13 @@
 {
     "name": "jelmerd/table-helper",
     "type": "cakephp-plugin",
-    "description": "TableHelper for CakePHP 2.x",
+	"version": "2.0.0",
+    "description": "TableHelper for CakePHP 3.x",
     "homepage": "http://github.com/JelmerD/TableHelper",
     "license": "MIT",
     "require": {
-        "php": ">=5.2.8",
-        "composer/installers": "*"
+        "php": ">=5.4.19",
+        "composer/installers": "*",
+		"cakephp/cakephp": ">=3.0"
     }
 }
