@@ -104,7 +104,7 @@ class TableHelper extends Helper
         if ($caption !== null && is_string($caption)) {
             $caption = $this->Html->tag('caption', $caption);
         }
-        return $caption . $this->_tagStart('table', $options);
+        return $this->_tagStart('table', $options) . $caption;
     }
 
     /**
@@ -177,12 +177,13 @@ class TableHelper extends Helper
      */
     public function row($cells = [], $rowOptions = [], $context = null, $contextOptions = [])
     {
+        if (!$this->_tags['table']) {
+            throw new InternalErrorException('Open the table first by calling TableHelper::create()');
+        }
         $parts = ['head', 'body', 'foot'];
         if ($context === null) {
             $context = $this->_tags['thead'] ? 'head' : ($this->_tags['tfoot'] ? 'foot' : 'body');
         }
-        $context = strtolower($context); #failsafe
-
 
         if (!in_array($context, $parts)) {
             throw new InternalErrorException('The $context variable must be equal to one of the following: ' . implode(', ', $parts));
@@ -294,8 +295,10 @@ class TableHelper extends Helper
      */
     public function count($part = null)
     {
-        if (!array_key_exists($part, $this->_count)) {
+        if (is_null($part)) {
             return $this->_count;
+        } elseif (!array_key_exists($part, $this->_count)) {
+            throw new InternalErrorException('This key does not exist in the count list. Choose: ' . implode(', ', array_keys($this->_count)));
         }
         return $this->_count[$part];
     }
