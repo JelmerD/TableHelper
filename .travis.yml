@@ -17,10 +17,13 @@ matrix:
 
 before_script:
   - composer install --prefer-dist --no-interaction
+
   - sh -c "if [ '$PHPCS' = '1' ]; then composer require cakephp/cakephp-codesniffer:dev-master; fi"
 
+  - cp phpunit.xml.dist phpunit.xml
+
 script:
-  - sh -c "if [ '$DEFAULT' = '1' ]; then phpunit; fi"
+  - sh -c "if [ '$DEFAULT' = '1' ]; then phpunit plugins/TableHelper; fi"
   - sh -c "if [ '$PHPCS' = '1' ]; then vendor/bin/phpcs --config-set installed_paths vendor/cakephp/cakephp-codesniffer; fi"
   - sh -c "if [ '$PHPCS' = '1' ]; then vendor/bin/phpcs -p --extensions=php --standard=CakePHP --ignore=vendor --ignore=config/Migrations -v . ; fi"
 
