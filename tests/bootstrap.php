@@ -16,9 +16,12 @@ $findRoot = function ($root) {
     } while ($root !== $lastRoot);
     throw new Exception("Cannot find the root of the application, unable to run tests");
 };
+
 $root = $findRoot(__FILE__);
 unset($findRoot);
+
 chdir($root);
+
 if (!defined('DS')) {
     define('DS', DIRECTORY_SEPARATOR);
 }
@@ -35,16 +38,21 @@ define('CACHE', TMP . 'cache' . DS);
 define('CAKE_CORE_INCLUDE_PATH', ROOT . '/vendor/cakephp/cakephp');
 define('CORE_PATH', CAKE_CORE_INCLUDE_PATH . DS);
 define('CAKE', CORE_PATH . 'src' . DS);
+
 require ROOT . '/vendor/cakephp/cakephp/src/basics.php';
 require ROOT . '/vendor/autoload.php';
+
 Cake\Core\Configure::write('App', ['namespace' => 'TableHelper\Test\App']);
 Cake\Core\Configure::write('debug', true);
 Cake\Core\Configure::write('App.encoding', 'UTF-8');
+
 ini_set('intl.default_locale', 'en_US');
+
 $TMP = new \Cake\Filesystem\Folder(TMP);
 $TMP->create(TMP . 'cache/models', 0777);
 $TMP->create(TMP . 'cache/persistent', 0777);
 $TMP->create(TMP . 'cache/views', 0777);
+
 $cache = [
     'default' => [
         'engine' => 'File',
@@ -65,25 +73,32 @@ $cache = [
     ],
 ];
 Cake\Cache\Cache::config($cache);
+
 Cake\Core\Configure::write('Session', [
     'defaults' => 'php'
 ]);
+
 //init router
 \Cake\Routing\Router::reload();
 \Cake\Core\Plugin::load('TableHelper', [
     'path' => dirname(dirname(__FILE__)) . DS,
     'routes' => true
 ]);
+
 if (file_exists($root . '/config/bootstrap.php')) {
     require $root . '/config/bootstrap.php';
 }
+
 Cake\Routing\DispatcherFactory::add('Routing');
 Cake\Routing\DispatcherFactory::add('ControllerFactory');
+
 //class_alias('TableHelper\Test\App\Controller\AppController', 'App\Controller\AppController');
+
 // Ensure default test connection is defined
 if (!getenv('db_dsn')) {
     putenv('db_dsn=sqlite:///:memory:');
 }
+
 Cake\Datasource\ConnectionManager::config('test', [
     'url' => getenv('db_dsn'),
     'timezone' => 'UTC'
