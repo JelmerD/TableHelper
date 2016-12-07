@@ -10,6 +10,7 @@ php:
 env:
   global:
     - DEFAULT=1
+    - PHPCS=0
 
 matrix:
   fast_finish: true
