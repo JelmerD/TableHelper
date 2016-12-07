@@ -4,9 +4,39 @@
     "description": "TableHelper for CakePHP 3.x",
     "homepage": "http://github.com/JelmerD/TableHelper",
     "license": "MIT",
+    "authors": [
+        {
+            "name": "Jelmer Dröge",
+            "homepage": "http://www.jelmerdroge.nl",
+            "role": "Author"
+        },
+        {
+            "name": "Others",
+            "homepage": "https://github.com/JelmerD/TableHelper/graphs/contributors"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/JelmerD/TableHelper/issues",
+        "source": "https://github.com/JelmerD/TableHelper"
+    },
     "require": {
         "php": ">=5.5.9",
         "composer/installers": "*",
-        "cakephp/cakephp": "~3.0"
+        "cakephp/cakephp": ">=3.0 <4.0.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "@stable",
+        "cakephp/cakephp-codesniffer": "^2.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "TableHelper\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "TableHelper\\Test\\": "tests",
+            "TableHelper\\Test\\Fixture\\": "tests"
+        }
     }
 }
