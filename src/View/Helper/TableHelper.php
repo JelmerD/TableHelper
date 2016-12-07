@@ -11,6 +11,8 @@
  */
 namespace TableHelper\View\Helper;
 
+use Cake\Network\Exception\InternalErrorException;
+use Cake\Utility\Hash;
 use Cake\View\StringTemplateTrait;
 use Cake\View\View;
 use Cake\View\Helper;
@@ -27,6 +29,13 @@ class TableHelper extends Helper
     use StringTemplateTrait;
 
     /**
+     * Helpers we use
+     *
+     * @var array
+     */
+    public $helpers = array('Html');
+
+    /**
      * Default configuration.
      *
      * @var array
@@ -35,19 +44,40 @@ class TableHelper extends Helper
         'partOptions' => [
             'table' => [],
             'head' => [],
+            'headRow' => [],
+            'headCell' => [
+                'tag' => 'th'
+            ],
             'body' => [],
-            'row' => [],
-            'cell' => [],
-            'foot' => []
+            'bodyRow' => [],
+            'bodyCell' => [
+                'tag' => 'td'
+            ],
+            'foot' => [],
+            'footRow' => [],
+            'footCell' => [
+                'tag' => 'td'
+            ],
+            'fallbackRow' => [],
         ],
     ];
 
     /**
-     * Helpers we use
+     * Keep track of several counts
+     *
+     * - Rows (in all the sections)
+     * - Columns
      *
      * @var array
      */
-    public $helpers = array('Html');
+    protected $_count;
+
+    /**
+     * Keep track of all the open tags, that way the helper works more like magic
+     *
+     * @var null|bool
+     */
+    protected $_tags;
 
     /**
      * {@inheritDoc}
@@ -57,273 +87,293 @@ class TableHelper extends Helper
         parent::initialize($config);
     }
 
-//    /**
-//     * A cache of the head section.
-//     *
-//     * @var array
-//     */
-//    private $__head;
-//
-//    /**
-//     * If set to true, the body is opened and may be closed
-//     *
-//     * @var bool
-//     */
-//    private $__bodyOpen;
-//
-//    /**
-//     * Keep track of the row count
-//     *
-//     * @var int
-//     */
-//    private $__rowCount;
-//
-//	/**
-//	 * Keep track of the column count per TableHelper::row() method call
-//	 *
-//	 * @var int
-//	 */
-//	private $__cellCount;
-//
-//	/**
-//	 * Keep track of the amount of head cells
-//	 *
-//	 * @var bool|int
-//	 */
-//	private $__headCellCount;
-//
-//	/**
-//	 * We overwrite the __construct because we want to be able to parse options to the helper construct for global $options
-//	 *
-//	 * @param View  $View The View this helper is being attached to.
-//	 * @param array $settings The sett
-//	 */
-//	public function __construct(View $View, $settings = array()){
-//		$settings = Hash::merge($this->__defaultSettings, $settings);
-//		parent::__construct($View, $settings);
-//	}
-//
-//    /**
-//     * Initialise the Table
-//     *
-//     * @param array $options Options to parse to the `table` tag
-//     * @return string The table opening
-//     */
-//    public function create($options = array())
-//    {
-//        $this->__reset();
-//		$options = Hash::merge($this->settings['createOptions'], $options);
-//        return $this->Html->tag('table', null, $options);
-//    }
-//
-//    /**
-//     * Parse the `thead` section
-//     *
-//     * @param array $columns The columns to add in this `thead`
-//     * @param array $rowOptions The options to parse to the `tr` tag
-//     * @param array $options The options to parse to the `thead` tag
-//     * @return string The complete thead section
-//     */
-//    public function head($columns = array(), $rowOptions = array(), $options = array())
-//    {
-//		$rowOptions = Hash::merge($this->settings['rowOptions'], $rowOptions);
-//		$options = Hash::merge($this->settings['headOptions'], $options);
-//		$this->__head = $columns;
-//
-//		$head =  $this->closeBody() . $this->Html->tag('thead', $this->__row($columns, $rowOptions, 'th'), $options);
-//		$this->__headCellCount = $this->__cellCount; #cache the head cell count
-//		return $head;
-//    }
-//
-//    /**
-//     * Open the `tbody` section
-//     *
-//     * This method will be called automatically when opening your first row. But for extra options you will need to call this manually
-//     *
-//     * @param array $options The options to parse to the `tbody` tag
-//     * @return string The opening of the `tbody`
-//     */
-//    public function body($options = array())
-//    {
-//        if ($this->__bodyOpen) {
-//            return null;
-//        }
-//		$options = Hash::merge($this->settings['bodyOptions'], $options);
-//        $this->__bodyOpen = true;
-//        return $this->Html->tag('tbody', null, $options);
-//    }
-//
-//	/**
-//	 * Close the body if it's still open
-//	 *
-//	 * @return string
-//	 */
-//	public function closeBody()
-//	{
-//		if ($this->__bodyOpen) {
-//			$this->__bodyOpen = false;
-//			return '</tbody>';
-//		}
-//		return null;
-//	}
-//
-//    /**
-//     * Parse a row
-//     *
-//     * @param array $columns The columns to add in this `tbody` tag
-//     * @param array $options The options to parse to this `tr` tag
-//     * @return string The complete row
-//     */
-//    public function row($columns = array(), $options = array())
-//    {
-//		$options = Hash::merge($this->settings['rowOptions'], $options);
-//		$this->__rowCount++;
-//        return $this->body() . $this->__row($columns, $options);
-//    }
-//
-//	/**
-//	 * Set a fallback for when the rowCount is equal to 0, there are two ways you could use this method
-//	 *
-//	 * - You can fill the $columns with a string, which will just be one cell, but with an automatick colspan value that equals the amount of cell in your head() method, or if you didn't use the head() method, the last cellCount (could be 0!)
-//	 *
-//	 * - You can fill the $columns with an array, just like as when you would use row(), but then there won't be an automatic colspan value
-//	 *
-//	 * <b>IMPORTANT! Make sure to parse this after the TableHelper::row() methods, but before the TableHelper::foot() method</b>
-//	 *
-//	 * @param string|array $columns Could either be an array of cells, or a string with an automatic colspan of the active columns
-//	 * @param array $options
-//	 *
-//	 * @return null|string
-//	 */
-//	public function fallback($columns, $options = array()){
-//		if ($this->get('rowCount') === 0){
-//
-//			# if it is a string or numeric value, add a colspan value that matches the "width" of the table
-//			if (!is_array($columns)){
-//				$columns = array(array(
-//					$columns, array(
-//						'colspan' => $this->__headCellCount === false ? $this->__cellCount : $this->__headCellCount
-//					)
-//				));
-//			}
-//
-//			return $this->body() . $this->__row($columns, $options);
-//		}
-//		return null;
-//	}
-//
-//    /**
-//     * Parse the `tfoot` section (and close the `tbody` section)
-//     *
-//     * @param array $columns The columns to add in this `tfoot` tag
-//     * @param array $rowOptions The options to parse to the `tr` tag
-//     * @param array $options The options to parse to the `tfoot` tag
-//     * @return string The complete `tfoot` section
-//     */
-//    public function foot($columns = array(), $rowOptions = array(), $options = array())
-//    {
-//		$rowOptions = Hash::merge($this->settings['rowOptions'], $rowOptions);
-//		$options = Hash::merge($this->settings['footOptions'], $options);
-//
-//		return $this->closeBody() . $this->Html->tag('tfoot', $this->__row($columns, $rowOptions), $options);
-//    }
-//
-//    /**
-//     * Close the table (and `tbody` if still needed)
-//     *
-//     * @return string
-//     */
-//    public function end()
-//    {
-//        return $this->closeBody() . '</table>';
-//    }
-//
-//    /**
-//     * Parse one cell
-//     *
-//     * You can either parse a string or an array as value. If you parse a string, this will be used as the cell value.
-//     * If you parse an array, the first key (0) will be used as the value and the second key (1) will be used as the
-//     * options array for the `$tag`. This way you can parse options to the `td/th` tag.
-//     *
-//     * @param string|array $value The value to have in this cell
-//     * @param null $key The key used for this cell, if the same key in the `thead` section is `false`, it won't be parsed
-//     * @param string $tag The tag to use (either `td` or `th`)
-//	 * @param bool $count Set to true if you want this cell to be added to the "getLastCellCount" result
-//     * @return null|string The complete cell, or null if the value at the same key in `thead` is set to `false`
-//     */
-//    public function cell($value, $key = null, $tag = 'td', $count = false)
-//    {
-//        if (isset($this->__head[$key]) && $this->__head[$key] === false) {
-//            return null;
-//        }
-//
-//		# if the count has to be incremented, increment
-//		if ($count){
-//			$this->__cellCount++;
-//		}
-//
-//        # if the value is an array, the user could have parsed a content and options key. Gives the user extra control.
-//        return $this->Html->tag(
-//            $tag,
-//            is_array($value) && array_key_exists(0, $value) ? $value[0] : $value,
-//			Hash::merge($this->settings['cellOptions'], is_array($value) && array_key_exists(1, $value) ? $value[1] : array())
-//        );
-//    }
-//
-//	/**
-//	 * Get a variable from the cache that could be useful to you
-//	 *
-//	 *
-//	 * <b>Available to you:</b>
-//	 * <li>head (a cache of the $columns parsed in head())</li>
-//	 * <li>bodyOpen (a boolean that indicates wether the tbody tag is open or not</li>
-//	 * <li>rowCount (the amount of rows currently parsed via row())</li>
-//	 * <li>cellCount (the amount of cells parsed in the last head(), row() or foot() method)</li>
-//	 * <li>headCellCount (the amount of cells parsed in the head() method, false if head() is not used)</li>
-//	 *
-//	 * @param $variable
-//	 *
-//	 * @return mixed
-//	 */
-//	public function get($variable){
-//		return $this->{'__' . $variable};
-//	}
-//
-//	/**
-//	 * Reset the cellCount to 0
-//	 */
-//	public function resetCellCount(){
-//		$this->__cellCount = 0;
-//	}
-//
-//    /**
-//     * Parse a row with a certain cell tag
-//     *
-//     * @param array $columns The columns to parse in this `tr` tag
-//     * @param array $options The options to parse to the `tr` tag
-//     * @param string $tag The tag to use (either `td` or `th`)
-//     * @return string The complete `tr` tag with its values
-//     */
-//    private function __row($columns = array(), $options = array(), $tag = 'td')
-//    {
-//        $this->resetCellCount();
-//		$cells = null;
-//        foreach ($columns as $key => $value) {
-//            $cells .= $this->cell($value, $key, $tag, true);
-//        }
-//        return $this->Html->tag('tr', $cells, $options);
-//    }
-//
-//    /**
-//     * Reset the tracking variables
-//     */
-//    private function __reset()
-//    {
-//        $this->__head = array();
-//        $this->__bodyOpen = false;
-//        $this->__rowCount = 0;
-//        $this->resetCellCount();
-//		$this->__headCellCount = false;
-//    }
+    /**
+     * Create a new table
+     *
+     * @param string|null $caption Text to show in the caption tag of the table. {@see http://www.w3schools.com/tags/tag_caption.asp}
+     * @param array $options Options to parse to the `table` tag
+     * @return string The table opening
+     */
+    public function create($caption = null, $options = [])
+    {
+        if ($this->_tags['table']) {
+            throw new InternalErrorException('You did not use the TableHelper::end() method on your previous table. Make sure to use it to prevent HTML bugs.');
+        }
+        $this->_reset();
+        $options = Hash::merge($this->config('partOptions.table'), $options);
+        if ($caption !== null && is_string($caption)) {
+            $caption = $this->Html->tag('caption', $caption);
+        }
+        return $caption . $this->_tagStart('table', $options);
+    }
+
+    /**
+     * Placeholder for {@see TableHelper\View\Helper\TableHelper::row()} with the $context option set to 'head'
+     *
+     * If the thead tag is still open, it will append a new tr to that group
+     *
+     * If the group is still open, but you add headOptions, it will force a new thead tag
+     *
+     * @param array $cells The cell data for this tr
+     * @param array $rowOptions Additional HTML attributes for the tr tag
+     * @param array $headOptions Additional HTML attributes for the thead tag
+     * @return string
+     */
+    public function head($cells = [], $rowOptions = [], $headOptions = [])
+    {
+        return $this->row($cells, $rowOptions, 'head', $headOptions);
+    }
+
+    /**
+     * Placeholder for {@see TableHelper\View\Helper\TableHelper::row()} with the $context option set to 'body'
+     *
+     * If the tbody tag is still open, it will append a new tr to that group
+     *
+     * If the group is still open, but you add bodyOptions, it will force a new tbody tag
+     *
+     * @param array $cells The cell data for this tr
+     * @param array $rowOptions Additional HTML attributes for the tr tag
+     * @param array $bodyOptions Additional HTML attributes for the tbody tag
+     * @return string
+     */
+    public function body($cells = [], $rowOptions = [], $bodyOptions = [])
+    {
+        return $this->row($cells, $rowOptions, 'body', $bodyOptions);
+    }
+
+    /**
+     * Placeholder for {@see TableHelper\View\Helper\TableHelper::row()} with the $context option set to 'foot'
+     *
+     * If the tfoot tag is still open, it will append a new tr to that group
+     *
+     * If the group is still open, but you add footOptions, it will force a new tfoot tag
+     *
+     * @param array $cells The cell data for this tr
+     * @param array $rowOptions Additional HTML attributes for the tr tag
+     * @param array $footOptions Additional HTML attributes for the tfoot tag
+     * @return string
+     */
+    public function foot($cells = [], $rowOptions = [], $footOptions = [])
+    {
+        return $this->row($cells, $rowOptions, 'foot', $footOptions);
+    }
+
+    /**
+     * Create a new row
+     *
+     * If the context tag is still open, it will append a new tr to that group.
+     *
+     * If the group is still open, but you add contextOptions, it will force a new context tag
+     *
+     * @see TableHelper\View\Helper\TableHelper::head()
+     * @see TableHelper\View\Helper\TableHelper::body()
+     * @see TableHelper\View\Helper\TableHelper::foot()
+     *
+     * @param array $cells The cell data for this tr
+     * @param array $rowOptions Additional HTML attributes for the tr tag
+     * @param string $context Choose head, body or foot (or use the placeholder functions)
+     * @param array $contextOptions Additional HTML attributes for the thead, tbody or tfoot tag
+     * @return string|null
+     */
+    public function row($cells = [], $rowOptions = [], $context = null, $contextOptions = [])
+    {
+        $parts = ['head', 'body', 'foot'];
+        if ($context === null) {
+            $context = $this->_tags['thead'] ? 'head' : ($this->_tags['tfoot'] ? 'foot' : 'body');
+        }
+        $context = strtolower($context); #failsafe
+
+
+        if (!in_array($context, $parts)) {
+            throw new InternalErrorException('The $context variable must be equal to one of the following: ' . implode(', ', $parts));
+        }
+        $tag = 't' . $context;
+
+        $this->_checkHeadColumnCount();
+        $this->_count['currentColumns'] = 0;
+
+
+        $text = $this->_tagEnd('tr');
+        if (!$this->_tags[$tag] || $contextOptions) {
+            $contextOptions = Hash::merge($this->config('partOptions.' . $context), $contextOptions);
+            $text .= $this->_partEnds() . $this->_tagStart($tag, $contextOptions);
+        }
+
+        $rowOptions = Hash::merge($this->config('partOptions.' . $context . 'Row'), $rowOptions);
+
+        $text .= $this->_tagStart('tr', $rowOptions);
+        $this->_count[$context . 'Rows']++;
+
+
+        foreach ($cells as $cell) {
+            if (is_array($cell)) {
+                $text .= $this->cell($cell[0], $cell[1]);
+            } else {
+                $text .= $this->cell($cell);
+            }
+        }
+
+        # do not end the tr tag, maybe the user wants to add extra cells dynamically
+        return $text;
+    }
+
+    /**
+     * Create a cell
+     *
+     * If a row is still open (which is the case, unless you start a new row, or end the table) you can keep adding cells.
+     *
+     * #Options#
+     * - `tag` You can use the tag option to override to 'td' or 'th'
+     * - {@see Cake\View\Helper\HtmlHelper::tag()}
+     *
+     * @param string $data The data to show in the cell
+     * @param array $options Additional HTML attributes for the td/th tag
+     * @return string
+     */
+    public function cell($data, $options = [])
+    {
+        if (!$this->_tags['tr']) {
+            throw new InternalErrorException('You did not open a row. Use TableHelper::row() to open a row first');
+        }
+
+        $context = $this->_tags['thead'] ? 'head' : ($this->_tags['tfoot'] ? 'foot' : 'body');
+        $options = Hash::merge($this->config('partOptions.' . $context . 'Cell'), $options);
+        if (!in_array($options['tag'], ['th', 'td'])) {
+            throw new InternalErrorException('The $options[\'tag\'] must be: \'th\' or \'td\'');
+        }
+        $tag = $options['tag'];
+        unset($options['tag']);
+
+        $this->_count['currentColumns']++;
+        return $this->Html->tag($tag, $data, $options);
+    }
+
+    /**
+     * Close the table
+     *
+     * @return string
+     */
+    public function end()
+    {
+        return $this->_partEnds() . $this->_tagEnd('table');
+    }
+
+    /**
+     * Show a fallback message when no body rows are present. Use it just before the TableHelper::end() method.
+     *
+     * @param array|string $data Data to show, when a string is used it will set the colspan automatically. Or use an array as {@see TableHelper\View\Helper\TableHelper::body()}
+     * @param array $rowOptions Additional HTML attributes for the tr tag
+     * @param array $bodyOptions Additional HTML attributes for the tbody tag
+     * @return string
+     */
+    public function fallback($data, $rowOptions = [], $bodyOptions = [])
+    {
+        if ($this->count('bodyRows') > 0) {
+            return null;
+        }
+        $this->_checkHeadColumnCount();
+        $rowOptions = Hash::merge($this->config('partOptions.fallbackRow'), $rowOptions);
+        if (is_array($data)) {
+            return $this->row($data, $rowOptions, 'body', $bodyOptions);
+        }
+        if ($this->count('headColumns') === null) {
+            throw new InternalErrorException('Unable to determine colspan. Create a head() or parse an array of $data');
+        }
+        return $this->row([
+            [$data, [
+                'colspan' => $this->count('headColumns')
+            ]]
+        ], $rowOptions, 'body', $bodyOptions);
+    }
+
+    /**
+     * Get the count of several parts.
+     *
+     * @param string $part Filter the count list. If it does not exist, it will return all counts
+     * @return mixed
+     */
+    public function count($part = null)
+    {
+        if (!array_key_exists($part, $this->_count)) {
+            return $this->_count;
+        }
+        return $this->_count[$part];
+    }
+
+    /**
+     * Close all table tags except for the table tag.
+     *
+     * @return null|string
+     */
+    protected function _partEnds()
+    {
+        $text = null;
+        foreach (['tr', 'thead', 'tbody', 'tfoot'] as $tag) {
+            $text .= $this->_tagEnd($tag);
+        }
+        return $text;
+    }
+
+    /**
+     * Open a tag, without content
+     *
+     * @param string $tag The tag to open
+     * @param array $options HTML attributes
+     * @return string
+     */
+    protected function _tagStart($tag, $options = [])
+    {
+        $this->_tags[$tag] = true;
+        return $this->Html->tag($tag, null, $options);
+    }
+
+    /**
+     * Close a tag
+     *
+     * @param string $tag Tag to close
+     * @return null|string
+     */
+    protected function _tagEnd($tag)
+    {
+        if ($this->_tags[$tag]) {
+            $this->_tags[$tag] = false;
+            return sprintf('</%s>', $tag);
+        }
+        return null;
+    }
+
+    /**
+     * Check if a has been created once and use that amount of columns for the fixed column count.
+     */
+    protected function _checkHeadColumnCount()
+    {
+        if ($this->_tags['thead'] && $this->count('headColumns') === null) {
+            $this->_count['headColumns'] = $this->_count['currentColumns'];
+        }
+    }
+
+    /**
+     * Reset the tracking variables
+     */
+    protected function _reset()
+    {
+        $this->_tags = [
+            'table' => false,
+            'thead' => false,
+            'tbody' => false,
+            'tfoot' => false,
+            'tr' => false,
+        ];
+        $this->_count = [
+            # first count of columns when creating a head, this will be used for catching errors by the user and the amount of colspan for the fallback.
+            'headColumns' => null,
+            # current amount of column, in this row
+            'currentColumns' => 0,
+            # total count of rows in the different sections
+            'headRows' => 0,
+            'bodyRows' => 0,
+            'footRows' => 0,
+        ];
+    }
 
 }
