@@ -1,9 +1,9 @@
-TableHelper
+TableHelper for CakePHP 3.x
 ===========
 
-TableHelper for CakePHP 3.x 
-
 [![Build Status](https://travis-ci.org/JelmerD/TableHelper.svg?branch=master)](https://travis-ci.org/JelmerD/TableHelper)
+
+[Demo and examples](http://sandbox.jelmerdroge.nl/plugins/table-helper)
 
 Installation
 ------------
