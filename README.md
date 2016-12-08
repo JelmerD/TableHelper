@@ -5,6 +5,8 @@ TableHelper for CakePHP 3.x
 
 [Demo and examples](http://sandbox.jelmerdroge.nl/plugins/table-helper)
 
+In case the live example is down, you can see the examples [here](https://github.com/JelmerD/cakephp-sandbox-3/tree/master/src/Template/Element/Demo/TableHelper) too.
+
 Installation
 ------------
 
